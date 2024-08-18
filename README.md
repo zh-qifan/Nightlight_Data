@@ -93,5 +93,8 @@ The generate outputs are in `outputs/` folder and are split for each state. With
 ### Visualizations
 
 Here I provide some visualizations of the extracted nighttime light data in Mexico.
-![Figure 1: Extracted Nightlight Data for Mexico from 201204 to 201303 (VIIRSV2.1). The value is the `average_masked` column of the dataset. The value is clipped by its 99.9% quantile to exclude outliers for better visualisation.](figures/fig-1-mexico.png)
 
+<figure>
+  <img src="./figures/fig-1-mexico.png" alt="">
+  <figcaption>Figure 1: Extracted Nightlight Data for Mexico from 201204 to 201303 (VIIRSV2.1). The value is the `average_masked` column of the dataset. The value is clipped by its 99.9% quantile to exclude outliers for better visualisation.</figcaption>
+</figure>
