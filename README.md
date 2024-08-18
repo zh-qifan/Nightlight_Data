@@ -31,4 +31,67 @@ Here are some wonderful nighttime light interactive maps.
 1.  [https://eogdata.mines.edu/products/trip_the_light/](https://eogdata.mines.edu/products/trip_the_light/) This one has good resolution but it does not provide option to change the date.
 2. [https://ladsweb.modaps.eosdis.nasa.gov/view-data/#l:VIIRS_SNPP_DayNightBand_At_Sensor_Radiance;@94.5,7.9,2.6z](https://ladsweb.modaps.eosdis.nasa.gov/view-data/#l:VIIRS_SNPP_DayNightBand_At_Sensor_Radiance;@94.5,7.9,2.6z)
 
-## Extract Nightlight Data in Mexico
+## Extract Nightlight Data
+
+### Procedure
+The current data construction only complete the 2012 to 2023 part. The part before 2012 can be constructed with the same method described below.
+
+**Data attributes Explanation (**[Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/NOAA_VIIRS_DNB_ANNUAL_V22)**)**
+
+| Name | Description | Remark |
+| --- | --- | --- |
+| average | Average DNB radiance values | VIIRS-DNB (V2) annual average are made on monthly increments. |
+| average_masked | Average Masked DNB radiance values | with background, biomass burning, and aurora zeroed out |
+| cf_cvg | Cloud-free coverages |  |
+| cvg | Total number of observations free of sunlight and moonlight. |  |
+| maximum | Maximum DNB radiance values. |  |
+| median | Median DNB radiance values. |  |
+| median_masked | Median Masked DNB radiance values. |  |
+| minimum | Minimum DNB radiance values. |  |
+- The GEE has some download/upload limit and thus it may raise some error if we want to use a higher resolution boundary.
+- The method of extracting different region from VIIRS (or DMSP) data
+    - The nightlight data are stored in raster data format, which is a matrix of nightlight intensity value
+    - The boundary data are mainly stored in polygon (or vector) data format
+    1. First, we can transform the two data into the same coordinate reference system, which can be automatically done in R or Python.
+    2. Then we use the boundary data to crop the nightlight data i.e. using lat_max, lat_min, lon_max and lon_min to crop the nightlight data into a smaller rectangular region.
+    3. Next, we mask those region that is not in the interior of the boundary.
+        - The masking process may bring some errors - all cells that are not fully covered by the boundary are set to NA.
+
+### Data Downloading
+
+The nighttime light data from 2012 can be downloaded in <https://eogdata.mines.edu/products/vnl/>. You can either manually download them or run.
+```{bash}
+sh ./get_data.sh
+```
+The data are `VNL_npp_2023_global_vcmslcfg_v2_c202402081600.average_masked.dat.tif` etc.
+
+The boundary data of Mexico is from <https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=889463807469>. We mainly use the `.shp` file. Once downloaded, the data are in `./889463807469_s` folder.
+
+The boundary data of Costa Rica can be found at https://drive.google.com/drive/folders/1u1OBbVwZ8BUfDWqugPDemnQZ1YSSEJ1x?usp=sharing.
+
+### Nighttime Light Data for Mexico
+
+The nighttime light data are generated for municipality, locality, AGEB and manzana level region in Mexico. To generate these data, we follow the algorithm below.
+
+1.  Get the polygons for each considered region.
+2.  Calculate the average nighttime light intensity of that region using nighttime light data map.
+
+In addition, we provide a calibration process using different level nighttime light data. For example, for each AGEB level data, we calculate the weighted average nighttime light intensity of all manzana level data within it and check whether it is close to the AGEB level nighttime light intensity.
+
+To get the result, one can run the following code. It may take quite a long time to get all the results.
+
+``` bash
+Rscript ExtractAGEB_Mexico.R
+Rscript ExtractLOC_Mexico.R
+Rscript ExtractManzana_Mexico.R
+
+Rscript CheckAccuracy_Mexico.R
+```
+
+The generate outputs are in `outputs/` folder and are split for each state. Within each subfolder, we have data file `mun_level_nightlight.csv`, `loc_level_nightlight.csv`, `AGEB_level_nightlight.csv`, `Manzana_level_nightlight.csv`. It also includes some visualization of map and calibration results. We only did calibration on AGEB and manzana level data.
+
+### Visualizations
+
+Here I provide some visualizations of the extracted nighttime light data in Mexico.
+![Figure 1: Extracted Nightlight Data for Mexico from 201204 to 201303 (VIIRSV2.1). The value is the `average_masked` column of the dataset. The value is clipped by its 99.9% quantile to exclude outliers for better visualisation.](figures/fig-1-mexico.png)
+
