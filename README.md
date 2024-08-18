@@ -76,7 +76,19 @@ The nighttime light data are generated for municipality, locality, AGEB and manz
 1.  Get the polygons for each considered region.
 2.  Calculate the average nighttime light intensity of that region using nighttime light data map.
 
-In addition, we provide a calibration process using different level nighttime light data. For example, for each AGEB level data, we calculate the weighted average nighttime light intensity of all manzana level data within it and check whether it is close to the AGEB level nighttime light intensity.
+In addition, we provide a calibration process using different level nighttime light data. By the definition of our aggregation method, if one region (e.g. municipales) can be decomposed into multiple regions (e.g. básicas rurales and básicas urbana),
+
+$$
+A = \sum_{i=1}^N A_i
+$$
+
+the intensity of the region should be equal to
+
+$$
+\text{Intensity of }A = \sum_{i = 1}^N \frac{\text{Area}(A_i)}{\text{Area}(A)} \text{Intensity of }A_i
+$$ 
+
+For example, for each AGEB level data, we calculate the weighted average nighttime light intensity of all manzana level data within it and check whether it is close to the AGEB level nighttime light intensity. 
 
 To get the result, one can run the following code. It may take quite a long time to get all the results.
 
@@ -98,3 +110,31 @@ Here I provide some visualizations of the extracted nighttime light data in Mexi
   <img src="./figures/fig-1-mexico.png" alt="">
   <figcaption>Figure 1: Extracted Nightlight Data for Mexico from 201204 to 201303 (VIIRSV2.1). The value is the `average_masked` column of the dataset. The value is clipped by its 99.9% quantile to exclude outliers for better visualisation.</figcaption>
 </figure>
+
+<figure>
+  <img src="./figures/gif-1-mexico-state.gif" alt="">
+  <figcaption>Figure 2: Extracted Nightlight Data for México (state) from 2013 to 2022. The value is the `average_masked` column of the dataset. The value is clipped by its 99.9% quantile to exclude outliers for better visualisation.</figcaption>
+</figure>
+
+<figure>
+  <img src="./figures/fig-2-mexico-manzana.png" alt="">
+  <figcaption>Figure 3: The intersection of 2012 VIIRS data and Áreas geoestadísticas básicas urbanas and Áreas geoestadísticas básicas rurales in México. The value for each region is calculated by area-weighed mean of nightlight raster data i.e.  the sum of nightlight value of cell i x (the area of the intersection between cell i and the AGEB region / the area of the AGEB region).</figcaption>
+</figure>
+
+<figure>
+  <img src="./figures/fig-3-mexico-calibration.png" alt="">
+  <figcaption>Figure 4: Correctness check on the nightlight intensity calculated using the above method (`nightlight_weighted`). `nightlight_mean` is non-weighted average for comparison. </figcaption>
+</figure>
+
+### Nighttime Light Data for Costa Rica
+
+The procedure are the same as Mexico part except that the state level data is aggregated using block level data. There is also a `ExtractBlock_Costa_Rica.R` file which is based on other shape file source (less than 492 district). To get the results, one can run
+
+``` bash
+Rscript ExtractBlock_Costa_Rica.R
+Rscript ConstructState_Costa_Rica.R
+```
+
+There is no calibration for this since the data is aggregated to state level and thus state level data perfectly match block level. The results are in `costa_rica_outputs/` and not like Mexico part, all data are stored in `block_level_nightlight.csv` and `state_level_nightlight.csv` files.
+
+
